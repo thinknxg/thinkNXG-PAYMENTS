@@ -262,9 +262,7 @@ class BraintreeSettings(Document):
 				if custom_redirect_to:
 					redirect_to = custom_redirect_to
 
-			redirect_url = (
-				f"payment-success?doctype={self.data.reference_doctype}&docname={self.data.reference_docname}"
-			)
+			redirect_url = "payment-success"
 		else:
 			status = "Error"
 			redirect_url = "payment-failed"
@@ -274,6 +272,7 @@ class BraintreeSettings(Document):
 			("docname", self.data.reference_docname),
 		]
 
+		get_parameters = [("doctype", self.data.reference_doctype), ("docname", self.data.reference_docname)]
 		if redirect_to:
 			get_parameters.append(("redirect_to", redirect_to))
 		if redirect_message:
