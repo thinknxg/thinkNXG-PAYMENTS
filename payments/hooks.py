@@ -1,8 +1,8 @@
 from . import __version__ as app_version
 
 app_name = "payments"
-app_title = "thinknxg Payments"
-app_publisher = "thinknxg Technologies"
+app_title = "thinkNXG Payments"
+app_publisher = "thinkNXG Technologies"
 app_description = "Payments app for frappe"
 app_email = "sales@kreatao.com"
 app_license = "MIT"
