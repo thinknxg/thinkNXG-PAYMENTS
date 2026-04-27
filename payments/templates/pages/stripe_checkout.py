@@ -32,7 +32,6 @@ def get_context(context):
 	if not (set(expected_keys) - set(list(frappe.form_dict))):
 		for key in expected_keys:
 			context[key] = frappe.form_dict[key]
-
 		gateway_controller = get_gateway_controller(
 			context.reference_doctype, context.reference_docname, context.payment_gateway
 		)

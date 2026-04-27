@@ -8,7 +8,6 @@ import frappe
 from erpnext.accounts.doctype.payment_entry.test_payment_entry import create_customer
 from erpnext.accounts.doctype.pos_invoice.test_pos_invoice import create_pos_invoice
 from erpnext.accounts.doctype.pos_opening_entry.test_pos_opening_entry import create_opening_entry
-from erpnext.stock.doctype.item.test_item import make_item
 from erpnext.accounts.doctype.pos_profile.test_pos_profile import make_pos_profile
 from erpnext.stock.doctype.item.test_item import make_item
 
@@ -40,10 +39,12 @@ class TestMpesaSettings(unittest.TestCase):
 			write_off_account="Write Off - WP",
 			write_off_cost_center="Main - WP",
 		)
-		self.pos_profile = pos_profile.name
-		create_opening_entry(pos_profile, frappe.session.user)
+		self.pos_profile = pos_profile
 
 	def tearDown(self):
+		frappe.db.rollback()
+		for x in frappe.db.get_all("POS Opening Entry"):
+			frappe.get_doc("POS Opening Entry", x.name).cancel().delete()
 		frappe.db.sql("delete from `tabMpesa Settings`")
 		frappe.db.sql("delete from `tabIntegration Request` where integration_request_service = 'Mpesa'")
 
@@ -84,6 +85,8 @@ class TestMpesaSettings(unittest.TestCase):
 		integration_request.delete()
 
 	def test_processing_of_callback_payload(self):
+		create_opening_entry(self.pos_profile, frappe.session.user)
+		frappe.db.set_single_value("POS Settings", "invoice_type", "POS Invoice")
 		mpesa_account = frappe.db.get_value(
 			"Payment Gateway Account", {"payment_gateway": "Mpesa-Payment"}, "payment_account"
 		)
@@ -97,7 +100,7 @@ class TestMpesaSettings(unittest.TestCase):
 			cost_center="Main - WP",
 			company="Wind Power LLC",
 			income_account="Sales - WP",
-			pos_profile=self.pos_profile,
+			pos_profile=self.pos_profile.name,
 			account_for_change_amount="Cash - WP",
 			expense_account="Cost of Goods Sold - WP",
 			do_not_submit=1,
@@ -145,6 +148,8 @@ class TestMpesaSettings(unittest.TestCase):
 		pos_invoice.delete()
 
 	def test_processing_of_multiple_callback_payload(self):
+		create_opening_entry(self.pos_profile, frappe.session.user)
+		frappe.db.set_single_value("POS Settings", "invoice_type", "POS Invoice")
 		mpesa_account = frappe.db.get_value(
 			"Payment Gateway Account", {"payment_gateway": "Mpesa-Payment"}, "payment_account"
 		)
@@ -160,7 +165,7 @@ class TestMpesaSettings(unittest.TestCase):
 			cost_center="Main - WP",
 			company="Wind Power LLC",
 			income_account="Sales - WP",
-			pos_profile=self.pos_profile,
+			pos_profile=self.pos_profile.name,
 			account_for_change_amount="Cash - WP",
 			expense_account="Cost of Goods Sold - WP",
 			do_not_submit=1,
@@ -214,7 +219,9 @@ class TestMpesaSettings(unittest.TestCase):
 		pr.delete()
 		pos_invoice.delete()
 
-	def test_processing_of_only_one_succes_callback_payload(self):
+	def test_processing_of_only_one_success_callback_payload(self):
+		create_opening_entry(self.pos_profile, frappe.session.user)
+		frappe.db.set_single_value("POS Settings", "invoice_type", "POS Invoice")
 		mpesa_account = frappe.db.get_value(
 			"Payment Gateway Account", {"payment_gateway": "Mpesa-Payment"}, "payment_account"
 		)
@@ -230,7 +237,7 @@ class TestMpesaSettings(unittest.TestCase):
 			cost_center="Main - WP",
 			company="Wind Power LLC",
 			income_account="Sales - WP",
-			pos_profile=self.pos_profile,
+			pos_profile=self.pos_profile.name,
 			account_for_change_amount="Cash - WP",
 			expense_account="Cost of Goods Sold - WP",
 			do_not_submit=1,
